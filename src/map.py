@@ -1,3 +1,6 @@
+import random
+
+
 class Block():
     def __init__(self, width=5, height=5):
         self.width = width
@@ -7,6 +10,9 @@ class Block():
         self.end_block = False
         self.number = 0
         self.prize_block = False
+        self.flame_block = False
+        self.hart_block = False
+        self.key_block = False
         self.koord = []
         self.valid_move = []
 
@@ -17,6 +23,17 @@ class Block():
                 self.block[i-1].append(' ')
         return self.block
 
+class Plushki():
+    def __init__(self):
+        self.key = [[" ", " ", " "],
+                    ["O", "T", "T"],
+                    [" ", " ", " "]]
+        self.hart = [[" ", " ", " ", " ", " "],
+                    ["h", "a", "r", "t", " "],
+                    [" ", " ", " ", " ", " "]]
+        self.flame = [["|", "\\", "/", "\\", " "],
+                      ["|", " ", " ", " ", "|"],
+                      ["|", "_", "_", "_", "|"]]
 
 class Map():
     def __init__(self, width=49, height=25):
@@ -35,7 +52,7 @@ class Map():
     def add_bloks(self):
         koord = [[1, 1], [7, 1], [7, 7], [13, 7], [13, 13], [19, 7],
                  [19, 1], [25, 1], [31, 1], [31, 7], [37, 7], [31, 13],
-                 [25, 19], [37, 19], [31, 19], [43, 19]]
+                 [25, 19], [31, 19], [37, 19], [43, 19]]
         if len(self.blocks) == 0:
             for number in range(0, len(koord)):  #16 блоков в лабиринте
                 block = Block()
@@ -44,7 +61,7 @@ class Map():
                 if block.number == 0:
                     block.start_block = True
                     block.valid_move = {"d": 1}
-                elif block.number == 4 or block.number == 11 or block.number == 13:
+                elif block.number == 4 or block.number == 10 or block.number == 12:
                     block.prize_block = True
                 elif block.number == 15:
                     block.end_block = True
@@ -56,6 +73,7 @@ class Map():
                     block.valid_move = {"a": 2, "w": 4, "d": 5}
                 if block.number == 4:
                     block.valid_move = {"s": 3}
+                    block.key_block = True
                 if block.number == 5:
                     block.valid_move = {"a": 3, "s": 6}
                 if block.number == 6:
@@ -65,17 +83,19 @@ class Map():
                 if block.number == 8:
                     block.valid_move = {"a": 7, "w": 9}
                 if block.number == 9:
-                    block.valid_move = {"s": 8, "w": 10, "d": 11}
+                    block.valid_move = {"s": 8, "w": 11, "d": 10}
                 if block.number == 10:
-                    block.valid_move = {"w": 12, "s": 9}
-                if block.number == 11:
                     block.valid_move = {"a": 9}
+                    block.hart_block = True
+                if block.number == 11:
+                    block.valid_move = {"w": 13, "s": 9}
                 if block.number == 12:
-                    block.valid_move = {"a": 13, "s": 10, "d": 14}
+                    block.valid_move = {"d": 13}
+                    block.hart_block = True
                 if block.number == 13:
-                    block.valid_move = {"d": 12}
+                    block.valid_move = {"a": 12, "s": 11, "d": 14}
                 if block.number == 14:
-                    block.valid_move = {"a": 12, "d": 15}
+                    block.valid_move = {"a": 13, "d": 15}
 
                 start_horizontal, start_vertikal = koord[number]
                 block.koord = [start_horizontal, start_vertikal]
@@ -104,10 +124,13 @@ class Map():
                 iter_player_index = 0
                 for i in range(0, len(block.block[row])):
                     if row == 0 or row == len(player.player)+1: break
-                    if i == 0: continue
-                    block.block[row][i] = player.player[row-1][iter_player_index]
-                    if iter_player_index == 2:
-                        break
+                    if i == 0:
+                        block.block[row][i] = ' '
+                        continue
+                    if iter_player_index <= len(player.player[0])-1:
+                        block.block[row][i] = player.player[row-1][iter_player_index]
+                    else:
+                        block.block[row][i] = ' '
                     iter_player_index += 1
         blocks[block.number] = block
         return blocks, block
@@ -118,10 +141,51 @@ class Map():
                 iter_player_index = 0
                 for i in range(0, len(block.block[row])):
                     if row == 0 or row == len(player.player) + 1: break
-                    if i == 0: continue
                     block.block[row][i] = ' '
-                    if iter_player_index == 2:
-                        break
                     iter_player_index += 1
         blocks[block.number] = block
         return blocks, block
+
+    def add_flame(self, block):
+        for row in range(0, len(block.block)):
+            iter_flame_index = 0
+            for i in range(0, len(block.block[row])):
+                if row == 0 or row == len(Plushki().flame)+1: break
+                block.block[row][i] = Plushki().flame[row-1][iter_flame_index]
+                if iter_flame_index == len(Plushki().flame[0])-1:
+                    break
+                iter_flame_index += 1
+        return block
+
+    def add_key(self, block):
+        for row in range(0, len(block.block)):
+            iter_key_index = 0
+            for i in range(0, len(block.block[row])):
+                if row == 0 or row == len(Plushki().key)+1: break
+                block.block[row][i] = Plushki().key[row-1][iter_key_index]
+                if iter_key_index == len(Plushki().key[0])-1:
+                    break
+                iter_key_index += 1
+        return block
+
+    def add_hart(self, block):
+        for row in range(0, len(block.block)):
+            iter_hart_index = 0
+            for i in range(0, len(block.block[row])):
+                if row == 0 or row == len(Plushki().hart)+1: break
+                block.block[row][i] = Plushki().hart[row-1][iter_hart_index]
+                if iter_hart_index == len(Plushki().hart[0])-1:
+                    break
+                iter_hart_index += 1
+        return block
+
+    # def add_hero_die(self, block):
+    #     for row in range(0, len(block.block)):
+    #         iter_key_index = 0
+    #         for i in range(0, len(block.block[row])):
+    #             if row == 0 or row == len(Plushki().key)+1: break
+    #             block.block[row][i] = Plushki().key[row-1][iter_key_index]
+    #             if iter_key_index == len(Plushki().key[0])-1:
+    #                 break
+    #             iter_key_index += 1
+    #     return block
