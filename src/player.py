@@ -5,7 +5,10 @@ class Player():
                        ["/", "|", "\\"],
                        ["/", " ", "\\"]]
         self.power = 5
+        self.position = 0
+        self.last_position = ""
 
-player = Player()
-for row in player.player:
-    print("".join(row))
+
+# player = Player()
+# for row in player.player:
+#     print("".join(row))
