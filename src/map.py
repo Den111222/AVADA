@@ -128,7 +128,10 @@ class Map():
                         block.block[row][i] = ' '
                         continue
                     if iter_player_index <= len(player.player[0])-1:
-                        block.block[row][i] = player.player[row-1][iter_player_index]
+                        if i == 1 and row == len(block.block)-1: block.block[row][1] = str(player.life)
+                        elif i == 3 and row == len(block.block)-1:
+                            block.block[row][i] = str(player.power)
+                        else: block.block[row][i] = player.player[row-1][iter_player_index]
                     else:
                         block.block[row][i] = ' '
                     iter_player_index += 1
