@@ -34,6 +34,12 @@ class Plushki():
         self.flame = [["|", "\\", "/", "\\", " "],
                       ["|", " ", " ", " ", "|"],
                       ["|", "_", "_", "_", "|"]]
+        self.key_in_flame = [["|", "\\", "/", "\\", " "],
+                      ["|", "O", "T", "T", "|"],
+                      ["|", "_", "_", "_", "|"]]
+        self.player_in_flame = [["|", "\\", "/", "\\", " "],
+                      ["|", " ", "o", " ", "|"],
+                      ["|", "_", "_", "_", "|"]]
 
 class Map():
     def __init__(self, width=49, height=25):
@@ -131,6 +137,8 @@ class Map():
                         if i == 1 and row == len(block.block)-1: block.block[row][1] = str(player.life)
                         elif i == 3 and row == len(block.block)-1:
                             block.block[row][i] = str(player.power)
+                        elif player.player[row-1][iter_player_index] == "N":
+                            block.block[row][i] = str(player.name)
                         else: block.block[row][i] = player.player[row-1][iter_player_index]
                     else:
                         block.block[row][i] = ' '
@@ -149,13 +157,22 @@ class Map():
         blocks[block.number] = block
         return blocks, block
 
-    def add_flame(self, block):
+    def add_flame(self, block, key=False, player=False):
+        if player is True:
+            flame_case = Plushki().player_in_flame
+        elif key is True:
+            flame_case = Plushki().key_in_flame
+        else:
+            flame_case = Plushki().flame
         for row in range(0, len(block.block)):
             iter_flame_index = 0
             for i in range(0, len(block.block[row])):
-                if row == 0 or row == len(Plushki().flame)+1: break
-                block.block[row][i] = Plushki().flame[row-1][iter_flame_index]
-                if iter_flame_index == len(Plushki().flame[0])-1:
+                # if row == 0 or row == len(Plushki().flame) + 1: break
+                if row == 0 or row == len(flame_case)+1: break
+                # block.block[row][i] = Plushki().flame[row - 1][iter_flame_index]
+                # if iter_flame_index == len(Plushki().flame[0]) - 1:
+                block.block[row][i] = flame_case[row-1][iter_flame_index]
+                if iter_flame_index == len(flame_case[0])-1:
                     break
                 iter_flame_index += 1
         return block

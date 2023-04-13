@@ -1,6 +1,6 @@
 class Player():
     def __init__(self):
-        self.name = ''
+        self.name = ' '
         self.life = 5
         self.power = 5
         self.position = 0
@@ -9,7 +9,7 @@ class Player():
         self.have_key = False
         self.win = False
         self.die = False
-        self.player = [[" ", "o", " "],
+        self.player = [["N", "o", " "],
                        ["/", "|", "\\"],
                        ["/", " ", "\\"],
                        ["L", " ", "P"]]
