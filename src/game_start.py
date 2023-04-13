@@ -6,7 +6,15 @@ import numpy as numpy
 from src.map import Map, Block
 from src.player import Player
 
-# logging
+# logging.basicConfig(level=logging.INFO, filemode="w",
+#                     format="%(asctime)s %(levelname)s %(message)s")
+logging.basicConfig(level=logging.INFO, filename="py_log.log", filemode="w",
+                    format="%(asctime)s %(levelname)s %(message)s")
+# logging.debug("A DEBUG Message")
+# logging.info("An INFO")
+# logging.warning("A WARNING")
+# logging.error("An ERROR")
+# logging.critical("A message of CRITICAL severity")
 
 def start_game():
     game_over = False
@@ -40,17 +48,18 @@ def create_plaeyrs():
 
 def create_flame_blocks(my_map, players):
     flame_blocks = numpy.random.choice([1, 2, 3, 5, 6, 7, 8, 9, 11, 13, 14], size=4, replace=False)
+    logging.info("Created flame bloks: ")
     for i in flame_blocks:
         key_in_flame = False
         player_in_flame = False
-        print(f"{i}: {my_map.blocks[i].koord}")
+        logging.info(f"{i}: {my_map.blocks[i].koord}")
         my_map.blocks[i].flame_block = True
         if my_map.blocks[i].key_block is True: key_in_flame = True
         for player in players:
             if player.position == i:
                 player.life -= 1
                 player_in_flame = True
-                print(f"player {player.name} in fire.\n life: {player.life}")
+                logging.info(f"player {player.name} in fire.\n life: {player.life}")
                 if player.life == 0:
                     player.die = True
         flame_block = my_map.blocks[i]
@@ -78,7 +87,7 @@ def check_all_players_die(players):
         if player.die is True:
             players_die += 1
     if players_die == len(players):
-        print("ALL DIE!!")
+        logging.info("ALL DIE!!")
         return True
     return False
 
@@ -98,14 +107,17 @@ def move(my_map, blocks, player, players):
         player.have_key = True
         player.power -= 1
         blocks[player.position].key_block = False
-        print(f"player {player.name} have key")
+        logging.info(f"player {player.name} chose 'e' \n"
+                     f"player {player.name} have key")
         my_map.delete_player(blocks, blocks[player.position], player)
         my_map.add_player(blocks, blocks[player.position], player)
         my_map.add_bloks()
         show_map(my_map, "")
     elif direction == "e" and blocks[player.position].key_block is False:
-        print("No Key here")
+        logging.info(f"player {player.name} chose 'e' \n"
+                     f"No Key here")
     elif direction in blocks[player.position].valid_move:
+        logging.info(f"player {player.name} chose {direction} \n")
         if blocks[player.position].key_block is True:
             my_map.delete_player(blocks, blocks[player.position], player)
             my_map.add_key(my_map.blocks[player.position])
@@ -125,14 +137,14 @@ def move(my_map, blocks, player, players):
                 chose = input(f"You wont to kill? {each_player.name}, if yes print 'y' else print 'n'")
                 if chose == "y":
                     each_player.life -= 1
-                    print(f"player {each_player.name} wos bin attack by player {player.name}\n"
-                          f"player {each_player.name} life: {each_player.life}")
+                    logging.info(f"player {player.name} chose 'y' to attack player {each_player.name}\n" 
+                                 f"player {each_player.name} wos bin attack by player {player.name}\n"
+                                 f"player {each_player.name} life: {each_player.life}")
                     if each_player.life == 0:
-                        print(f"player {each_player.name} wos bin kill by player {player.name}")
+                        logging.info(f"player {each_player.name} wos bin kill by player {player.name}")
                         each_player.move_state = False
                         each_player.die = True
                         each_player.position = -1
-                        # my_map.delete_player(blocks, blocks[player.position], player)
                     player.power -= 2
                 elif chose == "n":
                     player.power -= 3
@@ -142,10 +154,11 @@ def move(my_map, blocks, player, players):
         my_map.add_bloks()
         show_map(my_map, "")
     elif player.life > 0:
-        print("wrong direction loose yor life")
+        logging.info(f"player {player.name} chose {direction}"
+                     f"it is wrong direction and loose 1 life")
         player.life -= 1
     else:
-        print("die")
+        logging.info(f"die")
         player.die = True
 
 def conditions(blocks, next_num_block, player, my_map, players):
@@ -153,14 +166,15 @@ def conditions(blocks, next_num_block, player, my_map, players):
         player.power -= 1
     if blocks[next_num_block].hart_block is True:
         player.life = 5
-        print(f"yor life is {player.life}")
+        logging.info(f"player {player.name} in on 'heart' block his life is {player.life}")
     if blocks[next_num_block].flame_block is True:
         player.life -= 1
-        print(f"you lose 1 life, you have {player.life} life")
+        logging.info(f"player {player.name} in on 'flame' block, lose 1 life and have {player.life} life")
         blocks[next_num_block].flame_block = False
         if player.life == 0 and player.have_key is True:
             player.have_key = False
             player.die = True
+            logging.info(f"player {player.name} has key, and key is dropped in block {player.position}")
             my_map.blocks[player.position].key_block = True
             my_map.delete_player(blocks, blocks[player.position], player)
             my_map.add_key(my_map.blocks[player.position])
@@ -170,10 +184,10 @@ def conditions(blocks, next_num_block, player, my_map, players):
             player.die = True
             player.position = -1
     if player.position in player.last_position and blocks[player.last_position[-1]].prize_block is False:
-        print(f"PLAYER {player.name} scary and die.")
+        logging.info(f"PLAYER {player.name} scary and die.")
         player.move_state = False
         player.life = 0
-        print(f"player {player.name} life: {player.life}")
+        logging.info(f"player {player.name} life: {player.life}")
         player.die = True
         player.position = -1
         if player.have_key is True:
@@ -183,7 +197,7 @@ def conditions(blocks, next_num_block, player, my_map, players):
             my_map.add_key(my_map.blocks[player.last_position[-1]])
         return player.move_state
     if blocks[next_num_block].end_block is True and player.have_key is True:
-        print(f"PLAYER {player.name} WIN!")
+        logging.info(f"PLAYER {player.name} WIN!")
         player.move_state = False
         player.win = True
         return player.move_state
@@ -192,6 +206,6 @@ def conditions(blocks, next_num_block, player, my_map, players):
         player.life = 0
         player.die = True
         player.position = -1
-        print(f"PLAYER {player.name} KILL! \n player {player.name} life: {player.life}")
+        logging.info(f"PLAYER {player.name} KILL! \n player {player.name} life: {player.life}")
         my_map.delete_player(blocks, blocks[player.position], player)
         return player.move_state
