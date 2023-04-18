@@ -1,21 +1,24 @@
-import random
+import json
 
-
+# Это класс необходим для создания условного лабиринта и задания возможности блочной отрисовки.
 class Block():
-    def __init__(self, width=5, height=5):
+    def __init__(self, width=5, height=5, block=[], start_block = False, end_block = False,
+                 number = 0, prize_block = False, flame_block = False, hart_block = False,
+                 key_block = False, koord = [], valid_move = []):
         self.width = width
         self.height = height
-        self.block = []
-        self.start_block = False
-        self.end_block = False
-        self.number = 0
-        self.prize_block = False
-        self.flame_block = False
-        self.hart_block = False
-        self.key_block = False
-        self.koord = []
-        self.valid_move = []
+        self.block = block
+        self.start_block = start_block
+        self.end_block = end_block
+        self.number = number
+        self.prize_block = prize_block
+        self.flame_block = flame_block
+        self.hart_block = hart_block
+        self.key_block = key_block
+        self.koord = koord
+        self.valid_move = valid_move
 
+    # Создание изначально пустого блока, для дальнейшего управления.
     def generate(self):
         for i in range(1, self.height+1):
             self.block.append([])
@@ -23,6 +26,14 @@ class Block():
                 self.block[i-1].append(' ')
         return self.block
 
+    # Конвертация данных из json файла в объект класса.
+    @classmethod
+    def convert_from_json(cls, json_str):
+        json_str = json.dumps(json_str)
+        json_dict = json.loads(json_str)
+        return cls(**json_dict)
+
+# Этот класс для отрисовки плюшек, ввиде ключа, огня, ключа в огне и игрока в огне
 class Plushki():
     def __init__(self):
         self.key = [[" ", " ", " "],
@@ -41,13 +52,15 @@ class Plushki():
                       ["|", " ", "o", " ", "|"],
                       ["|", "_", "_", "_", "|"]]
 
+# Этот класс основной карты, на которой происходит вся отрисовка игры.
 class Map():
-    def __init__(self, width=49, height=25):
+    def __init__(self, width=49, height=25,my_map = [], blocks = []):
         self.width = width
         self.height = height
-        self.my_map = []
-        self.blocks = []
+        self.my_map = my_map
+        self.blocks = blocks
 
+    # Прорисовка заднего фона карты
     def generate(self):
         for i in range(1, self.height+1):
             self.my_map.append([])
@@ -55,12 +68,17 @@ class Map():
                 self.my_map[i-1].append('x')
         return self.my_map
 
+    # Добавление блоков в лабиринт, поскольку в каждом блоке должен находится игрок
     def add_bloks(self):
+        # Добавление координат блоков вручную, в задании был задан лабиринт
         koord = [[1, 1], [7, 1], [7, 7], [13, 7], [13, 13], [19, 7],
                  [19, 1], [25, 1], [31, 1], [31, 7], [37, 7], [31, 13],
                  [25, 19], [31, 19], [37, 19], [43, 19]]
+        # Добавление условия при создании лабиринта изначально, если лабиринт создан, то
+        # перезагружаются уже созданные блоки. Каждому блоку задаются допустимые пределы хода, а также
+        # атрибуты плюшек, ввыде сердца, ключа и т.д.
         if len(self.blocks) == 0:
-            for number in range(0, len(koord)):  #16 блоков в лабиринте
+            for number in range(0, len(koord)):
                 block = Block()
                 block.generate()
                 block.number = number
@@ -114,6 +132,7 @@ class Map():
                 iter = len(block.block)
                 self.add_block(start_horizontal=start_horizontal, start_vertikal=start_vertikal, iter=iter, block=block)
 
+    # Отрисовка каждого блока на карте.
     def add_block(self, start_horizontal, start_vertikal, iter, block):
         for row in block.block:
             start = len(self.my_map) - iter
@@ -124,6 +143,7 @@ class Map():
                     self.my_map[start - start_vertikal][i] = row[iter_row]
                     iter_row += 1
 
+    # Отрисовка игрока на карте при перемещении по блокам.
     def add_player(self, blocks, block, player):
         if player.position == block.number:
             for row in range(0, len(block.block)):
@@ -146,6 +166,7 @@ class Map():
         blocks[block.number] = block
         return blocks, block
 
+    # Отрисовка пустого блока на карте, когда игрок покинул блок.
     def delete_player(self, blocks, block, player):
         if player.position == block.number:
             for row in range(0, len(block.block)):
@@ -157,6 +178,7 @@ class Map():
         blocks[block.number] = block
         return blocks, block
 
+    # Отрисовка огня в блоке, на карте.
     def add_flame(self, block, key=False, player=False):
         if player is True:
             flame_case = Plushki().player_in_flame
@@ -167,16 +189,14 @@ class Map():
         for row in range(0, len(block.block)):
             iter_flame_index = 0
             for i in range(0, len(block.block[row])):
-                # if row == 0 or row == len(Plushki().flame) + 1: break
                 if row == 0 or row == len(flame_case)+1: break
-                # block.block[row][i] = Plushki().flame[row - 1][iter_flame_index]
-                # if iter_flame_index == len(Plushki().flame[0]) - 1:
                 block.block[row][i] = flame_case[row-1][iter_flame_index]
                 if iter_flame_index == len(flame_case[0])-1:
                     break
                 iter_flame_index += 1
         return block
 
+    # Отрисовка ключа в блоке, на карте.
     def add_key(self, block):
         for row in range(0, len(block.block)):
             iter_key_index = 0
@@ -188,6 +208,7 @@ class Map():
                 iter_key_index += 1
         return block
 
+    # Отрисовка сердца в блоке, на карте.
     def add_hart(self, block):
         for row in range(0, len(block.block)):
             iter_hart_index = 0
@@ -199,13 +220,9 @@ class Map():
                 iter_hart_index += 1
         return block
 
-    # def add_hero_die(self, block):
-    #     for row in range(0, len(block.block)):
-    #         iter_key_index = 0
-    #         for i in range(0, len(block.block[row])):
-    #             if row == 0 or row == len(Plushki().key)+1: break
-    #             block.block[row][i] = Plushki().key[row-1][iter_key_index]
-    #             if iter_key_index == len(Plushki().key[0])-1:
-    #                 break
-    #             iter_key_index += 1
-    #     return block
+    # Конвертация данных из json файла в объект класса.
+    @classmethod
+    def convert_from_json(cls, json_str):
+        json_str = json.dumps(json_str)
+        json_dict = json.loads(json_str)
+        return cls(**json_dict)
